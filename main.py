@@ -11,7 +11,6 @@ from PyQt6.QtWidgets import (
     QToolBar,
     QStatusBar,
     QGroupBox,
-    QHBoxLayout,
     QRadioButton,
 )
 from PyQt6.QtGui import QAction, QIcon
@@ -55,6 +54,8 @@ class MainWindow(QMainWindow):
 
         # Create and configure table widget for displaying student data
         self.table = QTableWidget()
+        # Make the table read-only (not editable)
+        self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.setColumnCount(4)
         self.table.setHorizontalHeaderLabels(("Id", "Name", "Course", "Mobile"))
         self.table.verticalHeader().setVisible(False)
@@ -216,10 +217,9 @@ class EditDialog(QDialog):
             try:
                 cursor.execute(
                     "UPDATE students SET name=?, course=?, mobile=? WHERE rowid=?",
-                    (name, course, mobile, self.index),
+                    (name.title(), course.title(), mobile, self.index),
                 )
                 connection.commit()
-                print(name, course, mobile, self.index)
                 main_window.load_data()
                 self.close()
             except Exception as e:
@@ -284,7 +284,7 @@ class InsertDialog(QDialog):
             try:
                 cursor.execute(
                     "INSERT INTO students (name, course, mobile) Values (?,?,?)",
-                    (name, course, mobile),
+                    (name.title(), course.title(), mobile),
                 )
                 connection.commit()
                 main_window.load_data()
