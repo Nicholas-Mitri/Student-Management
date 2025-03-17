@@ -94,9 +94,7 @@ class MainWindow(QMainWindow):
         """
         selected_row = self.table.currentRow()
         index = int(self.table.item(selected_row, 0).text())
-
         if selected_row >= 0:
-            print(self.table.currentRow())
             with sql.connect("database.db") as connection:
                 cursor = connection.cursor()
                 try:
