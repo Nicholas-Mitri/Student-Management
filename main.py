@@ -10,6 +10,9 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QToolBar,
     QStatusBar,
+    QGroupBox,
+    QHBoxLayout,
+    QRadioButton,
 )
 from PyQt6.QtGui import QAction, QIcon
 from PyQt6.QtCore import QSize, Qt
@@ -316,23 +319,75 @@ class SearchDialog(QDialog):
         self.student_name = QLineEdit()
         self.student_name.setPlaceholderText("Name")
         layout.addWidget(self.student_name)
-
+        # Add a spacer to create some vertical space between the search field and button
+        layout.addSpacing(20)
         # Create and add search button
         button = QPushButton("Search")
         button.clicked.connect(self.search_student)
         layout.addWidget(button)
 
+        layout.addSpacing(10)
+
+        # Create a group box for search options
+        search_options = QGroupBox("Search by")
+        options_layout = QVBoxLayout()
+
+        # Create radio buttons for search options
+        self.id_radio = QRadioButton("ID")
+        self.name_radio = QRadioButton("Name")
+        self.number_radio = QRadioButton("Mobile Number")
+
+        # Set Name as the default selected option
+        self.name_radio.setChecked(True)
+
+        # Add radio buttons to the layout
+        options_layout.addWidget(self.id_radio)
+        options_layout.addWidget(self.name_radio)
+        options_layout.addWidget(self.number_radio)
+        # Set spacing between radio buttons to 1
+        options_layout.setSpacing(1)
+
+        # Set the layout for the group box
+        search_options.setLayout(options_layout)
+
+        # Add the group box to the main layout
+        layout.addWidget(search_options)
+
         self.setLayout(layout)
 
     def search_student(self):
         """
-        Search for students by name and highlight matching results in the main table.
+        Search for students by the selected criteria and highlight matching results in the main table.
+
+        This function retrieves the search text from the input field, determines which column to search
+        based on the selected radio button (ID, Name, or Mobile Number), and then highlights any
+        matching items in the table. If no matches are found, the table selection is cleared.
         """
+        # Clear any existing selection in the table
+        main_window.table.clearSelection()
+        # Get the search text from the input field
         name = self.student_name.text()
+        # Default search column is 1 (Name)
+        search_column = 1
+        # Change search column based on radio button selection
+        if self.id_radio.isChecked():
+            search_column = 0  # ID column
+        elif self.number_radio.isChecked():
+            search_column = 3  # Mobile Number column
+
         if name:
-            items = main_window.table.findItems(name, Qt.MatchFlag.MatchFixedString)
-            for item in items:
-                main_window.table.item(item.row(), 1).setSelected(True)
+            # Search for items containing the search text
+            items = main_window.table.findItems(name, Qt.MatchFlag.MatchContains)
+            if items:
+                for item in items:
+                    # Only select items that are in the chosen search column
+                    if main_window.table.column(item) == search_column:
+                        main_window.table.item(item.row(), search_column).setSelected(
+                            True
+                        )
+            else:
+                # If no matches found, ensure table has no selection
+                main_window.table.clearSelection()
 
 
 # Create application instance
