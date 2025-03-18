@@ -12,6 +12,7 @@ from PyQt6.QtWidgets import (
     QStatusBar,
     QGroupBox,
     QRadioButton,
+    QMessageBox,
 )
 from PyQt6.QtGui import QAction, QIcon
 from PyQt6.QtCore import QSize, Qt
@@ -96,23 +97,35 @@ class MainWindow(QMainWindow):
         """
         Delete the selected student from the database and refresh the table.
         """
-        selected_row = self.table.currentRow()
-        index = int(self.table.item(selected_row, 0).text())
-        if selected_row >= 0:
-            with sql.connect("database.db") as connection:
-                cursor = connection.cursor()
-                try:
-                    cursor.execute(
-                        "DELETE FROM students WHERE rowid=?",
-                        (index,),
-                    )
-                    connection.commit()
-                except Exception as e:
-                    print(f"Error deleting student: {e}")
-                    connection.rollback()
-                finally:
-                    cursor.close()
-            self.load_data()
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Icon.NoIcon)
+        msg.setWindowTitle("Question")
+        msg.setText("Are you sure you want to delete this record?")
+        msg.setStandardButtons(
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        msg.setDefaultButton(QMessageBox.StandardButton.No)
+
+        reply = msg.exec()
+        if reply == QMessageBox.StandardButton.Yes:
+
+            selected_row = self.table.currentRow()
+            index = int(self.table.item(selected_row, 0).text())
+            if selected_row >= 0:
+                with sql.connect("database.db") as connection:
+                    cursor = connection.cursor()
+                    try:
+                        cursor.execute(
+                            "DELETE FROM students WHERE rowid=?",
+                            (index,),
+                        )
+                        connection.commit()
+                    except Exception as e:
+                        print(f"Error deleting student: {e}")
+                        connection.rollback()
+                    finally:
+                        cursor.close()
+                self.load_data()
 
     def edit_student(self):
         """
@@ -392,6 +405,7 @@ class SearchDialog(QDialog):
 
 # Create application instance
 app = QApplication(sys.argv)
+app.setAttribute(Qt.ApplicationAttribute.AA_DontUseNativeDialogs, True)
 # Create and show main window
 main_window = MainWindow()
 main_window.show()
