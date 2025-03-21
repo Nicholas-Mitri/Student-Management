@@ -102,7 +102,7 @@ class MainWindow(QMainWindow):
         msg.setWindowTitle("Question")
         msg.setText("Are you sure you want to delete this record?")
         msg.setStandardButtons(
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+            QMessageBox.StandardButton.No | QMessageBox.StandardButton.Yes
         )
         msg.setDefaultButton(QMessageBox.StandardButton.No)
 
